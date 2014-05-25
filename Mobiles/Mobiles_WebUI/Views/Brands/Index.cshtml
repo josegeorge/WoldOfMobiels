@@ -1,0 +1,14 @@
+﻿@model IEnumerable<Mobiles_WebUI.Models.Brand>
+@{
+    ViewBag.Title = "Index";
+}
+<h2>
+    Index</h2>
+@foreach (var item in Model)
+{
+    <div class="brand">
+        @Html.ActionLink(item.BrandName, "Products", new { id = item.Id }) @Html.ActionLink("(" + item.NumberOfProducts.ToString() + ")", "Products", new { id = item.Id })
+    </div>
+          
+      
+}
