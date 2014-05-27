@@ -10,18 +10,18 @@ namespace DIDDataRead
 
             var gsmarena = new GsmarenaOnline();
 
-            var gsmarenaBrands = new Thread(gsmarena.PopulateBrands);
-            gsmarenaBrands.SetApartmentState(ApartmentState.STA);
-            gsmarenaBrands.Start();
+            //var gsmarenaBrands = new Thread(gsmarena.PopulateBrands);
+            //gsmarenaBrands.SetApartmentState(ApartmentState.STA);
+            //gsmarenaBrands.Start();
 
             //var gsmarenaBrandPages = new Thread(gsmarena.PopulateBrandPages);
             //gsmarenaBrandPages.SetApartmentState(ApartmentState.STA);
             //gsmarenaBrandPages.Start();
 
 
-            //var gsmarenaBrandPagePhones = new Thread(gsmarena.PopulateBrandMobilePhones);
-            //gsmarenaBrandPagePhones.SetApartmentState(ApartmentState.STA);
-            //gsmarenaBrandPagePhones.Start();
+            var gsmarenaBrandPagePhones = new Thread(gsmarena.PopulateBrandMobilePhones);
+            gsmarenaBrandPagePhones.SetApartmentState(ApartmentState.STA);
+            gsmarenaBrandPagePhones.Start();
 
             //var gsmarenaProductSpecificationsOdd = new Thread(() => gsmarena.PopulateMobileSpecifications(false));
             //gsmarenaProductSpecificationsOdd.SetApartmentState(ApartmentState.STA);

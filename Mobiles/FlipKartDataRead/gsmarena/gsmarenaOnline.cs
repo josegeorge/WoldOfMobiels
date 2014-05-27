@@ -215,7 +215,7 @@ namespace Mobiles.gsmarena
                         string url = brandPage.Url;
                         using (var browser = new IE(url,true))
                         {
-                            browser.ShowWindow(NativeMethods.WindowShowStyle.ForceMinimized);
+                            browser.ShowWindow(NativeMethods.WindowShowStyle.Hide);
                             browser.WaitForComplete();
 
                             IEnumerable<Div> productsDivs =
