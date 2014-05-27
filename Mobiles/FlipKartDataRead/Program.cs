@@ -9,9 +9,10 @@ namespace DIDDataRead
         {
 
             var gsmarena = new GsmarenaOnline();
-            //var gsmarenaBrands = new Thread(gsmarena.PopulateBrands);
-            //gsmarenaBrands.SetApartmentState(ApartmentState.STA);
-            //gsmarenaBrands.Start();
+
+            var gsmarenaBrands = new Thread(gsmarena.PopulateBrands);
+            gsmarenaBrands.SetApartmentState(ApartmentState.STA);
+            gsmarenaBrands.Start();
 
             //var gsmarenaBrandPages = new Thread(gsmarena.PopulateBrandPages);
             //gsmarenaBrandPages.SetApartmentState(ApartmentState.STA);
