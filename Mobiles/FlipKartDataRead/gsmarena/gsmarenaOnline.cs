@@ -24,6 +24,11 @@ namespace Mobiles.gsmarena
     {
         #region "Method to Populate Categories And Brands"
 
+
+
+
+
+
         public void PopulateBrands()
         {
              Url = "http://www.gsmarena.com/makers.php3";
@@ -108,7 +113,7 @@ namespace Mobiles.gsmarena
             }
         }
 
-        public void PopulateBrandPages()
+        public void PopulateBrandPages(IEnumerable<int> brandIdList)
         {
             Settings.AttachToBrowserTimeOut = 240;
             Settings.WaitUntilExistsTimeOut = 240;
@@ -118,10 +123,11 @@ namespace Mobiles.gsmarena
                 try
                 {
                     List<string> brandPagesList = dbContext.BrandPages.Select(b => b.Url).Distinct().ToList();
-                    List<DataModels.Brand> brands = dbContext.Brands.ToList();
+                   List<DataModels.Brand> brands = dbContext.Brands.Where(b => brandIdList.Contains(b.Id)).ToList();
+                  //  List<DataModels.Brand> brands = dbContext.Brands.ToList();
                     foreach (DataModels.Brand brand in brands)
                     {
-                        KillIeProcesses();
+                       // KillIeProcesses();
                         if (brandPagesList.Contains(brand.Url).Equals(false))
                         {
                             brand.BrandPages.Add(new BrandPage

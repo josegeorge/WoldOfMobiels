@@ -1,5 +1,10 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using DataRead.ShopDataModel;
+using Mobiles.DataModels;
 using Mobiles.gsmarena;
+using NUnit.Framework.Constraints;
 
 namespace DIDDataRead
 {
@@ -14,14 +19,46 @@ namespace DIDDataRead
             //gsmarenaBrands.SetApartmentState(ApartmentState.STA);
             //gsmarenaBrands.Start();
 
+
+            List<Mobiles.DataModels.Brand> brands;
+            using (var dbContext = new MobilesDbContext())
+            {
+                brands = dbContext.Brands.ToList();
+            }
+
+            var threads = new List<Thread>();
+            var maxId = brands.Max(b => b.Id);
+            int idToRange = 0;
+            while (idToRange <= maxId)
+            {
+                var idFromRange = idToRange;
+                idToRange = idToRange + ((idToRange + 20) < maxId ? 20 : maxId - idToRange);
+                var brandIds = from b in brands
+                               where b.Id > idFromRange && b.Id < idToRange
+                               select b.Id;
+
+                var thread = new Thread(() => gsmarena.PopulateBrandPages(brandIds));
+                thread.SetApartmentState(ApartmentState.STA);
+                threads.Add(thread);
+
+                if (idToRange == maxId)
+                {
+                    break;
+                }
+            }
+
+            threads.ForEach(t => t.Start());
+
+
+
             //var gsmarenaBrandPages = new Thread(gsmarena.PopulateBrandPages);
             //gsmarenaBrandPages.SetApartmentState(ApartmentState.STA);
             //gsmarenaBrandPages.Start();
 
 
-            var gsmarenaBrandPagePhones = new Thread(gsmarena.PopulateBrandMobilePhones);
-            gsmarenaBrandPagePhones.SetApartmentState(ApartmentState.STA);
-            gsmarenaBrandPagePhones.Start();
+            //var gsmarenaBrandPagePhones = new Thread(gsmarena.PopulateBrandMobilePhones);
+            //gsmarenaBrandPagePhones.SetApartmentState(ApartmentState.STA);
+            //gsmarenaBrandPagePhones.Start();
 
             //var gsmarenaProductSpecificationsOdd = new Thread(() => gsmarena.PopulateMobileSpecifications(false));
             //gsmarenaProductSpecificationsOdd.SetApartmentState(ApartmentState.STA);
