@@ -1,0 +1,5 @@
+select B.Id,B.BrandName,b.NumberOfProducts,count(bp.id) from [dbo].[BrandPages] BP 
+inner join [dbo].[Brands] B 
+on B.Id=BP.Brand_Id 
+group by B.Id,B.BrandName,b.NumberOfProducts
+
