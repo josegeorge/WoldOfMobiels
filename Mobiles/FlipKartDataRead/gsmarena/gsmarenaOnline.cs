@@ -204,7 +204,7 @@ namespace Mobiles.gsmarena
 
         #region PopulateProductsOfBrands
 
-        public void PopulateBrandMobilePhones()
+        public void PopulateBrandMobilePhones(IEnumerable<int> brandIdList)
         {
             Settings.AttachToBrowserTimeOut = 240;
             Settings.WaitUntilExistsTimeOut = 240;
@@ -214,62 +214,69 @@ namespace Mobiles.gsmarena
                 try
                 {
                     List<BrandPage> brandPages =
-                        dbContext.BrandPages.Include("Brand").Where(p => p.IsRead == false).ToList();
+                        dbContext.BrandPages.Include("Brand").Where(p => brandIdList.Contains(p.Brand.Id) && p.IsRead == false).ToList();
                     foreach (BrandPage brandPage in brandPages)
                     {
-                        KillIeProcesses();
                         string url = brandPage.Url;
-                        using (var browser = new IE(url,true))
+                        try
                         {
-                            browser.ShowWindow(NativeMethods.WindowShowStyle.Hide);
-                            browser.WaitForComplete();
-
-                            IEnumerable<Div> productsDivs =
-                                browser.Divs.Where(d => d.ClassName != null && d.ClassName.Contains("makers"));
-
-                            var listOfProducts = new List<OnlineShopModel.Product>();
-                            foreach (Div productDiv in productsDivs)
+                            using (var browser = new IE(url, true))
                             {
-                                List productsList = productDiv.Lists.First();
+                                browser.ShowWindow(NativeMethods.WindowShowStyle.Hide);
+                                browser.WaitForComplete();
 
-                                if (productsList != null && productsList.Exists)
+                                IEnumerable<Div> productsDivs =
+                                    browser.Divs.Where(d => d.ClassName != null && d.ClassName.Contains("makers"));
+
+                                var listOfProducts = new List<OnlineShopModel.Product>();
+                                foreach (Div productDiv in productsDivs)
                                 {
-                                    foreach (ListItem productListItem in productsList.ListItems)
+                                    List productsList = productDiv.Lists.First();
+
+                                    if (productsList != null && productsList.Exists)
                                     {
-                                        Link productLink = productListItem.Links.First();
-                                        Element productName =
-                                            productLink.Children().Where(c => c.TagName.ToUpper() == "STRONG").First();
-                                        Image productImage = productLink.Images.First();
-                                        listOfProducts.Add(new OnlineShopModel.Product
-                                                               {
-                                                                   ProductName = productName.Text,
-                                                                   Url = productLink.Url,
-                                                                   ImageUrl = productImage.Src,
-                                                                   Description = productImage.Title
-                                                               });
+                                        foreach (ListItem productListItem in productsList.ListItems)
+                                        {
+                                            Link productLink = productListItem.Links.First();
+                                            Element productName =
+                                                productLink.Children().Where(c => c.TagName.ToUpper() == "STRONG").First();
+                                            Image productImage = productLink.Images.First();
+                                            listOfProducts.Add(new OnlineShopModel.Product
+                                            {
+                                                ProductName = productName.Text,
+                                                Url = productLink.Url,
+                                                ImageUrl = productImage.Src,
+                                                Description = productImage.Title
+                                            });
+                                        }
                                     }
                                 }
-                            }
 
-                            Database.SetInitializer(new CreateDatabaseIfNotExists<MobilesDbContext>());
+                                Database.SetInitializer(new CreateDatabaseIfNotExists<MobilesDbContext>());
 
-                            List<Product> dbProductsList = dbContext.Products.ToList();
+                                List<Product> dbProductsList = dbContext.Products.ToList();
 
-                            foreach (OnlineShopModel.Product product in listOfProducts)
-                            {
-                                Product filterProduct = dbProductsList.Where(p => p.Url == product.Url).FirstOrDefault();
-                                if (filterProduct == null)
+                                foreach (OnlineShopModel.Product product in listOfProducts)
                                 {
-                                    Product dbProduct = GetDbProduct(product);
-                                    dbProduct.Brand = brandPage.Brand;
-                                    dbContext.Products.Add(dbProduct);
+                                    Product filterProduct = dbProductsList.Where(p => p.Url == product.Url).FirstOrDefault();
+                                    if (filterProduct == null)
+                                    {
+                                        Product dbProduct = GetDbProduct(product);
+                                        dbProduct.Brand = brandPage.Brand;
+                                        dbContext.Products.Add(dbProduct);
+                                    }
                                 }
+
+                                brandPage.IsRead = true;
+
+                                dbContext.SaveChanges();
                             }
-
-                            brandPage.IsRead = true;
-
-                            dbContext.SaveChanges();
                         }
+                        catch (Exception)
+                        {
+                         
+                        }
+                        
                     }
                 }
 

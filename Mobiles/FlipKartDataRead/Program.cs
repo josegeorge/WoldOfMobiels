@@ -27,38 +27,53 @@ namespace DIDDataRead
             }
 
             var threads = new List<Thread>();
+            List<List<int>> brandIdLists = new List<List<int>>();
             var maxId = brands.Max(b => b.Id);
             int idToRange = 0;
             while (idToRange <= maxId)
             {
                 var idFromRange = idToRange;
                 idToRange = idToRange + ((idToRange + 20) < maxId ? 20 : maxId - idToRange);
-                var brandIds = from b in brands
-                               where b.Id > idFromRange && b.Id < idToRange
-                               select b.Id;
+                var brandIds = (from b in brands
+                           where b.Id > idFromRange && b.Id <= idToRange
+                           select b.Id).ToList();
 
-                var thread = new Thread(() => gsmarena.PopulateBrandPages(brandIds));
-                thread.SetApartmentState(ApartmentState.STA);
-                threads.Add(thread);
-
+                brandIdLists.Add(brandIds);
                 if (idToRange == maxId)
                 {
                     break;
                 }
             }
 
+            //foreach (var ids in brandIdLists)
+            //{
+            //    var thread = new Thread(() => gsmarena.PopulateBrandPages(ids))
+            //    {
+            //        Name = string.Format("BrandIds-{0}-to-{1}", ids.First(), ids.Last())
+            //    };
+            //    thread.SetApartmentState(ApartmentState.STA);
+            //    threads.Add(thread);
+            //}
+            //threads.ForEach(t => t.Start());
+
+
+
+            //////var gsmarenaBrandPages = new Thread(gsmarena.PopulateBrandPages);
+            //////gsmarenaBrandPages.SetApartmentState(ApartmentState.STA);
+            //////gsmarenaBrandPages.Start();
+
+            foreach (var ids in brandIdLists)
+            {
+                var thread = new Thread(() => gsmarena.PopulateBrandMobilePhones(ids))
+                {
+                    Name = string.Format("MobilesForBrandIds-{0}-to-{1}", ids.First(), ids.Last())
+                };
+                thread.SetApartmentState(ApartmentState.STA);
+                threads.Add(thread);
+            }
             threads.ForEach(t => t.Start());
 
 
-
-            //var gsmarenaBrandPages = new Thread(gsmarena.PopulateBrandPages);
-            //gsmarenaBrandPages.SetApartmentState(ApartmentState.STA);
-            //gsmarenaBrandPages.Start();
-
-
-            //var gsmarenaBrandPagePhones = new Thread(gsmarena.PopulateBrandMobilePhones);
-            //gsmarenaBrandPagePhones.SetApartmentState(ApartmentState.STA);
-            //gsmarenaBrandPagePhones.Start();
 
             //var gsmarenaProductSpecificationsOdd = new Thread(() => gsmarena.PopulateMobileSpecifications(false));
             //gsmarenaProductSpecificationsOdd.SetApartmentState(ApartmentState.STA);
